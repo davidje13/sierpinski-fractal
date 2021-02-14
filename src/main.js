@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const offscreenCanvas = out.transferControlToOffscreen();
 
-	const renderer = new Worker('render-worker.js');
+	const renderer = new Worker('src/render-worker.js');
 	renderer.postMessage({ canvas: offscreenCanvas }, [offscreenCanvas]);
 	renderer.addEventListener('message', ({ data }) => {
 		if (data === 'complete') {
