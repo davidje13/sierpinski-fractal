@@ -48,18 +48,23 @@ function makeAgents(maxAgents, vertices, fraction) {
 	return agents;
 }
 
-const COL_SCALE_NUM = 16384;
-const COL_SCALE = new Uint32Array(COL_SCALE_NUM + 1);
-const COL_SCALE_RGBA = new Uint8ClampedArray(COL_SCALE.buffer);
-for (let i = 0; i < COL_SCALE_NUM; ++ i) {
-	const v = i / (COL_SCALE_NUM - 1);
-	COL_SCALE_RGBA[i * 4    ] = (1 - Math.pow(v, 0.2)) * 256;
-	COL_SCALE_RGBA[i * 4 + 1] = (1 - Math.pow(v, 0.5)) * 256;
-	COL_SCALE_RGBA[i * 4 + 2] = (1 - Math.pow(v, 0.8)) * 256;
-	COL_SCALE_RGBA[i * 4 + 3] = 255;
+function makeScale(sampleCount, powR, powG, powB) {
+	const scale = new Uint32Array(sampleCount + 1);
+	const scaleRGBA = new Uint8ClampedArray(scale.buffer);
+	for (let i = 0; i < sampleCount; ++ i) {
+		const v = i / (sampleCount - 1);
+		scaleRGBA[i * 4    ] = (1 - Math.pow(v, powR)) * 256;
+		scaleRGBA[i * 4 + 1] = (1 - Math.pow(v, powG)) * 256;
+		scaleRGBA[i * 4 + 2] = (1 - Math.pow(v, powB)) * 256;
+		scaleRGBA[i * 4 + 3] = 255;
+	}
+	scaleRGBA[3] = 0;
+	scale[sampleCount] = scale[sampleCount - 1];
+	return scale;
 }
-COL_SCALE_RGBA[3] = 0;
-COL_SCALE[COL_SCALE_NUM] = COL_SCALE[COL_SCALE_NUM - 1];
+
+const COL_SCALE_NUM = 16384;
+const COL_SCALE = makeScale(COL_SCALE_NUM, 0.2, 0.5, 0.8);
 
 class Fractal {
 	constructor(target, points, fraction, { maxAgents = 1000 } = {}) {
@@ -68,43 +73,39 @@ class Fractal {
 		this.outData = this.ctx.createImageData(size, size);
 		this.outBuffer = new Uint32Array(this.outData.data.buffer);
 
-		this.points = points;
 		this.fraction = fraction;
 		this.size = size;
 		this.half = Math.floor(size / 2) + 1;
 		this.buckets = new Uint32Array(this.half * size);
-		this.centre = this.half - 0.5;
 		this.vertices = makeVertices(points);
 		this.projections = makeProjections(points, size * 0.5 - 2);
 		this.agents = makeAgents(maxAgents, this.vertices, fraction);
-		this.accumulate(this.agents);
-	}
-
-	accumulate(agents) {
-		const { projections, buckets, half, centre } = this;
-		const A = agents.length;
-		for (let i = 0; i < A; i += 2) {
-			const x = agents[i    ];
-			const y = agents[i + 1];
-			for (let j = 0; j < projections.length; j += 4) {
-				const px = Math.abs(x * projections[j    ] + y * projections[j + 1]) + 0.5;
-				const py =          x * projections[j + 2] + y * projections[j + 3] + centre;
-				++buckets[(py | 0) * half + (px | 0)];
-			}
-		}
 	}
 
 	step(steps) {
-		const { agents, points, vertices, fraction } = this;
+		const {
+			projections,
+			buckets,
+			half,
+			agents,
+			vertices,
+			fraction,
+		} = this;
 		const ifraction = 1.0 - fraction;
+		const cy = half - 0.5;
+		const points = vertices.length / 2;
 		const A = agents.length;
 		for (let i = 0; i < steps; ++i) {
 			for (let a = 0; a < A; a += 2) {
 				const target = ((Math.random() * points) | 0) * 2;
-				agents[a    ] = agents[a    ] * ifraction + vertices[target    ] * fraction;
-				agents[a + 1] = agents[a + 1] * ifraction + vertices[target + 1] * fraction;
+				const x = agents[a    ] = agents[a    ] * ifraction + vertices[target    ] * fraction;
+				const y = agents[a + 1] = agents[a + 1] * ifraction + vertices[target + 1] * fraction;
+				for (let j = 0; j < projections.length; j += 4) {
+					const px = Math.abs(x * projections[j    ] + y * projections[j + 1]) + 0.5;
+					const py =          x * projections[j + 2] + y * projections[j + 3] + cy;
+					++buckets[(py | 0) * half + (px | 0)];
+				}
 			}
-			this.accumulate(agents);
 		}
 	}
 
@@ -181,7 +182,7 @@ function step() {
 		lastRatio = -1;
 		stopThresh = 0;
 	}
-	fractal.step(10);
+	fractal.step(20);
 	const [max, avg] = fractal.render();
 	const ratio = avg / max;
 	if (Math.abs(ratio - lastRatio) < 0.0001) {
