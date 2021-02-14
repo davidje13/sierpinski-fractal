@@ -1,11 +1,25 @@
+const GOLD_RATIO = (1 + Math.sqrt(5)) / 2;
+
 window.addEventListener('DOMContentLoaded', () => {
 	const size = 701;
 	const dpr = window.devicePixelRatio;
+	const specialFractions = [
+		1 / 3,
+		GOLD_RATIO ** -2, // appears significant for 3, 4, 5, 6, 10 points
+		0.5,
+	];
 
 	const points = document.getElementsByName('points')[0];
 	const fraction = document.getElementsByName('fraction')[0];
 	const fractionOut = document.getElementById('fraction-display');
 	const out = document.getElementById('out');
+
+	const fractionValues = document.getElementById('fraction-values');
+	specialFractions.sort((a, b) => (a - b)).forEach((f) => {
+		const o = document.createElement('option');
+		o.setAttribute('value', f);
+		fractionValues.appendChild(o);
+	});
 
 	out.width = size * dpr;
 	out.height = size * dpr;
