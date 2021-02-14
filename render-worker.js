@@ -102,18 +102,20 @@ class Fractal {
 
 	render(target) {
 		const { size, buckets } = this;
+		const N = size * size;
 		let max = 0;
-		for (let y = 0; y < size; ++y) {
-			for (let x = 0; x < size; ++x) {
-				max = Math.max(max, buckets[y * size + x]);
-			}
+		let sum = 0;
+		for (let p = 0; p < N; ++p) {
+			const v = buckets[p];
+			sum += v;
+			max = Math.max(max, v);
 		}
 		const m = COL_SCALE_NUM / max;
 		const out = new Uint32Array(target.data.buffer);
-		for (let p = 0; p < size * size; ++p) {
+		for (let p = 0; p < N; ++p) {
 			out[p] = COL_SCALE[(buckets[p] * m) | 0];
 		}
-		return max;
+		return [max, sum / N];
 	}
 }
 
@@ -123,18 +125,31 @@ let outData = null;
 let fractal = null;
 let change = null;
 let interval = null;
+let lastRatio = null;
+let stopThresh = 0;
 
 self.addEventListener('message', ({ data }) => {
 	if (data.canvas) {
 		out = data.canvas;
 	}
 	if (data.points) {
-		change = data;
-		if (!interval) {
-			interval = setInterval(step, 0);
-		}
+		start(data);
 	}
 });
+
+function start(data) {
+	change = data;
+	if (!interval) {
+		interval = setInterval(step, 0);
+	}
+}
+
+function stop() {
+	clearInterval(interval);
+	interval = null;
+	fractal = null;
+	self.postMessage('complete');
+}
 
 function step() {
 	if (change) {
@@ -143,13 +158,19 @@ function step() {
 		outData = ctx.createImageData(fractal.size, fractal.size);
 		fractal.stepGrowAgents(change.agents);
 		change = null;
+		lastRatio = -1;
+		stopThresh = 0;
 	}
 	fractal.step(10);
-	if (fractal.render(outData) >= 0x20000 && false) { // TODO: find reliable stopping criteria
-		clearInterval(interval);
-		interval = null;
-		fractal = null;
-		self.postMessage('complete');
+	const [max, avg] = fractal.render(outData);
+	const ratio = avg / max;
+	if (Math.abs(ratio - lastRatio) < 0.0001) {
+		if ((++stopThresh) > 50) {
+			stop();
+		}
+	} else {
+		stopThresh = 0;
+		lastRatio = ratio;
 	}
 	ctx.putImageData(outData, 0, 0);
 }

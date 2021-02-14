@@ -13,6 +13,12 @@ canvas {
 	margin: 0 auto;
 	max-width: 100%;
 	background: white;
+	transition: box-shadow 0.3s linear;
+}
+
+canvas.live {
+	transition: box-shadow 0.1s linear;
+	box-shadow: 0 0 0 3px #FF8000;
 }
 
 input[type=range] {

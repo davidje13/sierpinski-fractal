@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	renderer.postMessage({ canvas: offscreenCanvas }, [offscreenCanvas]);
 	renderer.addEventListener('message', ({ data }) => {
 		if (data === 'complete') {
-			console.log('done');
+			out.classList.remove('live');
 		}
 	});
 
@@ -26,6 +26,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		const frac = Number(fraction.value);
 		fractionOut.innerText = frac.toFixed(6);
 
+		out.classList.add('live');
 		renderer.postMessage({ points: pts, fraction: frac, agents: 10000 });
 	}
 
