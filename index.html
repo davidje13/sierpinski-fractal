@@ -1,0 +1,37 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="content-security-policy" content="
+	base-uri 'self';
+	default-src 'none';
+	script-src 'self';
+	style-src 'self';
+	img-src 'self';
+	form-action 'none';
+">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimal-ui">
+<link rel="icon" href="favicon.png" />
+<link rel="stylesheet" href="main.css" />
+<script src="main.js"></script>
+</head>
+<body>
+<article>
+	<canvas id="out"></canvas>
+	<br />
+	<label>
+		Points
+		<input type="number" name="points" min="3" value="3" />
+	</label>
+	<label>
+		Fraction
+		<datalist id="fraction-values">
+			<option value="0.333333333333"> <!-- appears significant for 3 points -->
+			<option value="0.382022471910112"> <!-- fibonacci ratio 34/89, appears significant for 3, 4, 5, 6, 10 points -->
+			<option value="0.5">
+		</datalist>
+		<input type="range" name="fraction" min="0" max="1" value="0.5" step="any" list="fraction-values" />
+		<span id="fraction-display"></span>
+	</label>
+</article>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "sierpinski-fractal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "http-server . -d false -c-1 -a localhost -p 8080"
+  },
+  "devDependencies": {
+    "http-server": "^0.12.3"
+  }
+}

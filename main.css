@@ -1,0 +1,21 @@
+body {
+	background: #EEEEEE;
+	font-family: sans-serif;
+}
+
+article {
+	text-align: center;
+}
+
+canvas {
+	display: block;
+	border-radius: 100%;
+	margin: 0 auto;
+	max-width: 100%;
+	background: white;
+}
+
+input[type=range] {
+	width: 300px;
+	vertical-align: middle;
+}
