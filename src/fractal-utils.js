@@ -49,16 +49,16 @@ function makeAgents(maxAgents, vertices, fraction) {
 }
 
 function makeScale(sampleCount, powR, powG, powB) {
-	const scale = new Uint32Array(sampleCount + 1);
+	const scale = new Uint32Array(sampleCount);
 	const scaleRGBA = new Uint8ClampedArray(scale.buffer);
-	for (let i = 0; i < sampleCount; ++ i) {
-		const v = i / (sampleCount - 1);
+	for (let i = 0; i < sampleCount - 1; ++ i) {
+		const v = i / (sampleCount - 2);
 		scaleRGBA[i * 4    ] = (1 - Math.pow(v, powR)) * 256;
 		scaleRGBA[i * 4 + 1] = (1 - Math.pow(v, powG)) * 256;
 		scaleRGBA[i * 4 + 2] = (1 - Math.pow(v, powB)) * 256;
 		scaleRGBA[i * 4 + 3] = 255;
 	}
 	scaleRGBA[3] = 0;
-	scale[sampleCount] = scale[sampleCount - 1];
+	scale[sampleCount - 1] = scale[sampleCount - 2];
 	return scale;
 }

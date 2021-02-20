@@ -1,5 +1,5 @@
 class Fractal {
-	constructor(target, points, fraction, { maxAgents = 1000, palette }) {
+	constructor(target, points, fraction, { maxAgents, palette }) {
 		const size = target.width;
 		this.ctx = target.getContext('2d');
 		this.outData = this.ctx.createImageData(size, size);
