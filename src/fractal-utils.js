@@ -30,8 +30,23 @@ function makeAgents(maxAgents, vertices, fraction) {
 	let agents = new Float32Array(2);
 	agents[0] = vertices[0];
 	agents[1] = vertices[1];
+	if (points <= 2) {
+		return agents;
+	}
 	let count = 1;
-	while (points >= 2 && count * points < maxAgents) {
+	if ((points & 1) && (points - 1) / 2 < maxAgents) {
+		// for an odd number of agents, begin by only moving towards one half (symmetry)
+		const next = new Float32Array(points - 1);
+		const x = agents[0];
+		const y = agents[1];
+		for (let i = 2; i < points; i += 2) {
+			next[i - 2] = x * ifraction + vertices[i    ] * fraction;
+			next[i - 1] = y * ifraction + vertices[i + 1] * fraction;
+		}
+		agents = next;
+		count = (points - 1) / 2;
+	}
+	while (count * points < maxAgents) {
 		const next = new Float32Array(count * points * 2);
 		for (let a = 0; a < count; ++ a) {
 			const x = agents[a * 2    ];
